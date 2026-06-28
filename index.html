@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pendukung Keputusan - SAW</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" defer></script>
+    <!-- Custom JS -->
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>SPK SAW</span>
+            </div>
+            <button class="close-sidebar-btn" id="closeSidebarBtn">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link active" data-target="dashboard-page"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a href="#" class="nav-link" data-target="kriteria-page"><i class="fa-solid fa-list"></i> Kriteria</a></li>
+            <li><a href="#" class="nav-link" data-target="alternatif-page"><i class="fa-solid fa-users"></i> Alternatif</a></li>
+            <li><a href="#" class="nav-link" data-target="penilaian-page"><i class="fa-solid fa-pen-to-square"></i> Penilaian</a></li>
+            <li><a href="#" class="nav-link" data-target="saw-page"><i class="fa-solid fa-calculator"></i> Perhitungan SAW</a></li>
+            <li><a href="#" class="nav-link" data-target="laporan-page"><i class="fa-solid fa-file-pdf"></i> Laporan</a></li>
+            <li><a href="#" class="nav-link" data-target="pengaturan-page"><i class="fa-solid fa-gear"></i> Pengaturan</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-btn" id="menuBtn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h2 id="pageTitle">Dashboard</h2>
+            </div>
+            <div class="header-right">
+                <div class="weight-indicator" id="weightIndicator">
+                    <span class="indicator-text">Total Bobot: 0%</span>
+                    <i class="fa-solid fa-circle-exclamation text-warning" id="weightIcon"></i>
+                </div>
+                <button class="theme-toggle" id="themeToggleBtn" title="Toggle Dark Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Pages Container -->
+        <div class="pages-container">
+            
+            <!-- Dashboard Page -->
+            <section id="dashboard-page" class="page active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-primary-light text-primary">
+                            <i class="fa-solid fa-list"></i>
+                        </div>
+                        <div class="stat-details">
+                            <p class="stat-title">Total Kriteria</p>
+                            <h3 class="stat-value" id="dashTotalKriteria">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success-light text-success">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <p class="stat-title">Total Alternatif</p>
+                            <h3 class="stat-value" id="dashTotalAlternatif">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning-light text-warning">
+                            <i class="fa-solid fa-check-to-slot"></i>
+                        </div>
+                        <div class="stat-details">
+                            <p class="stat-title">Total Penilaian</p>
+                            <h3 class="stat-value" id="dashTotalPenilaian">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card highlight-card">
+                        <div class="stat-icon bg-white text-primary">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div class="stat-details text-white">
+                            <p class="stat-title text-white">Alternatif Terbaik</p>
+                            <h3 class="stat-value text-white" id="dashBestAlternatif">-</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card">
+                        <h3 class="card-title">Ranking Alternatif</h3>
+                        <div class="chart-container">
+                            <canvas id="rankingChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Distribusi Bobot Kriteria</h3>
+                        <div class="chart-container">
+                            <canvas id="bobotChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cara Penggunaan Aplikasi -->
+                <div class="card mt-4 guide-section">
+                    <div class="card-header border-none">
+                        <h3 class="card-title text-primary"><i class="fa-solid fa-book-open-reader"></i> Panduan Penggunaan Aplikasi</h3>
+                        <p class="text-muted text-sm">Ikuti langkah-langkah di bawah ini untuk menghasilkan keputusan yang tepat.</p>
+                    </div>
+                    <div class="guide-grid">
+                        <div class="guide-step">
+                            <div class="guide-number">1</div>
+                            <div class="guide-icon"><i class="fa-solid fa-list"></i></div>
+                            <h4>Input Kriteria</h4>
+                            <p>Masukkan kriteria penilaian beserta jenis (Benefit/Cost) dan bobotnya (Total harus 100%).</p>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-number">2</div>
+                            <div class="guide-icon"><i class="fa-solid fa-users"></i></div>
+                            <h4>Input Alternatif</h4>
+                            <p>Masukkan data alternatif atau kandidat yang akan dipilih/diranking.</p>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-number">3</div>
+                            <div class="guide-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+                            <h4>Isi Penilaian</h4>
+                            <p>Berikan nilai untuk setiap alternatif pada masing-masing kriteria yang telah ditentukan.</p>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-number">4</div>
+                            <div class="guide-icon"><i class="fa-solid fa-calculator"></i></div>
+                            <h4>Hitung SAW</h4>
+                            <p>Buka menu Perhitungan SAW untuk melihat proses matematis dan hasil akhir perankingan.</p>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-number">5</div>
+                            <div class="guide-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                            <h4>Cetak Laporan</h4>
+                            <p>Buka menu Laporan untuk melihat rekapitulasi hasil dan unduh dalam format PDF.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kriteria Page -->
+            <section id="kriteria-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Kriteria</h3>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchKriteria" placeholder="Cari kriteria...">
+                            </div>
+                            <button class="btn btn-primary" onclick="openModal('kriteriaModal')">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="kriteriaTable">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Kriteria</th>
+                                    <th>Jenis</th>
+                                    <th>Bobot (%)</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be injected here -->
+                            </tbody>
+                        </table>
+                        <div id="kriteriaEmptyState" class="empty-state d-none">
+                            <i class="fa-solid fa-folder-open empty-icon"></i>
+                            <p>Belum ada data kriteria.</p>
+                            <p class="text-muted text-sm">Silakan tambahkan data terlebih dahulu.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alternatif Page -->
+            <section id="alternatif-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Alternatif</h3>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchAlternatif" placeholder="Cari alternatif...">
+                            </div>
+                            <button class="btn btn-primary" onclick="openModal('alternatifModal')">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="alternatifTable">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Alternatif</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be injected here -->
+                            </tbody>
+                        </table>
+                        <div id="alternatifEmptyState" class="empty-state d-none">
+                            <i class="fa-solid fa-users-slash empty-icon"></i>
+                            <p>Belum ada data alternatif.</p>
+                            <p class="text-muted text-sm">Silakan tambahkan data terlebih dahulu.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Penilaian Page -->
+            <section id="penilaian-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Matriks Penilaian</h3>
+                        <p class="text-muted text-sm" style="margin-top: 5px;">Isi nilai untuk setiap alternatif berdasarkan kriteria.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-input" id="penilaianTable">
+                            <thead>
+                                <tr id="penilaianTableHeader">
+                                    <th>Alternatif</th>
+                                    <!-- Dynamic criteria columns will be injected here -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be injected here -->
+                            </tbody>
+                        </table>
+                        <div id="penilaianEmptyState" class="empty-state d-none">
+                            <i class="fa-solid fa-clipboard-list empty-icon"></i>
+                            <p>Data Kriteria atau Alternatif belum lengkap.</p>
+                            <p class="text-muted text-sm">Pastikan Anda telah menambahkan minimal 1 kriteria dan 1 alternatif.</p>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-end" style="margin-top: 1rem;">
+                        <button class="btn btn-primary" id="btnSimpanPenilaian" style="display: none;">
+                            <i class="fa-solid fa-save"></i> Simpan Penilaian
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SAW Page -->
+            <section id="saw-page" class="page">
+                <div id="sawAlertContainer"></div>
+
+                <div id="sawContent" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="section-title">Hasil Perhitungan Metode SAW</h3>
+                        <button class="btn btn-primary" onclick="calculateSAW()"><i class="fa-solid fa-rotate-right"></i> Hitung Ulang</button>
+                    </div>
+
+                    <!-- Step 1: Decision Matrix -->
+                    <div class="card mb-4">
+                        <h3 class="card-title">Tahap 1: Matriks Keputusan (X)</h3>
+                        <div class="table-responsive">
+                            <table class="table" id="matrixTable">
+                                <thead>
+                                    <tr id="matrixTableHeader"></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Normalization Matrix -->
+                    <div class="card mb-4">
+                        <h3 class="card-title">Tahap 2: Matriks Normalisasi (R)</h3>
+                        <div class="mb-3 formulas-container">
+                            <p class="text-sm"><strong>Rumus:</strong></p>
+                            <ul class="text-sm text-muted">
+                                <li>Benefit: <code>r<sub>ij</sub> = x<sub>ij</sub> / max(x<sub>ij</sub>)</code></li>
+                                <li>Cost: <code>r<sub>ij</sub> = min(x<sub>ij</sub>) / x<sub>ij</sub></code></li>
+                            </ul>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="normTable">
+                                <thead>
+                                    <tr id="normTableHeader"></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 & 4: Preference & Ranking -->
+                    <div class="card mb-4">
+                        <h3 class="card-title">Tahap 3 & 4: Nilai Preferensi (V) & Perankingan</h3>
+                        <div class="mb-3 formulas-container">
+                            <p class="text-sm"><strong>Rumus:</strong> <code>V<sub>i</sub> = &Sigma; (w<sub>j</sub> &times; r<sub>ij</sub>)</code></p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="rankTable">
+                                <thead>
+                                    <tr>
+                                        <th>Ranking</th>
+                                        <th>Alternatif</th>
+                                        <th>Nilai Preferensi (V)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Laporan Page -->
+            <section id="laporan-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Laporan Hasil Keputusan</h3>
+                        <button class="btn btn-danger" onclick="exportPDF()" id="btnExportPDF" disabled>
+                            <i class="fa-solid fa-file-pdf"></i> Export PDF
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="laporanContent">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-file-circle-xmark empty-icon"></i>
+                                <p>Belum ada laporan.</p>
+                                <p class="text-muted text-sm">Lakukan perhitungan SAW terlebih dahulu untuk melihat dan mengekspor laporan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pengaturan Page -->
+            <section id="pengaturan-page" class="page">
+                <div class="card max-w-2xl mx-auto">
+                    <div class="card-header">
+                        <h3 class="card-title">Pengaturan Sistem</h3>
+                    </div>
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Tema Tampilan</h4>
+                                <p class="text-muted text-sm">Ganti antara mode terang dan gelap.</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-outline" id="settingThemeBtn" onclick="toggleTheme()">
+                                    <i class="fa-solid fa-moon"></i> Dark Mode
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="divider">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Export Data</h4>
+                                <p class="text-muted text-sm">Simpan seluruh data Kriteria, Alternatif, dan Penilaian ke format JSON.</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-primary" onclick="exportJSON()">
+                                    <i class="fa-solid fa-download"></i> Export JSON
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="divider">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Import Data</h4>
+                                <p class="text-muted text-sm">Pulihkan data dari file JSON. <strong>Perhatian:</strong> Data saat ini akan ditimpa.</p>
+                            </div>
+                            <div class="setting-action">
+                                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importJSON(event)">
+                                <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">
+                                    <i class="fa-solid fa-upload"></i> Import JSON
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="divider">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Reset Sistem</h4>
+                                <p class="text-muted text-sm text-danger">Menghapus seluruh data dari sistem secara permanen.</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-danger" onclick="confirmReset()">
+                                    <i class="fa-solid fa-trash-can"></i> Reset Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modals -->
+
+    <!-- Modal Kriteria -->
+    <div class="modal-overlay" id="kriteriaModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="kriteriaModalTitle">Tambah Kriteria</h3>
+                <button class="close-modal" onclick="closeModal('kriteriaModal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="formKriteria">
+                    <input type="hidden" id="kriteriaId">
+                    <div class="form-group">
+                        <label for="kriteriaKode">Kode Kriteria <span class="text-danger">*</span></label>
+                        <input type="text" id="kriteriaKode" class="form-control" required placeholder="Contoh: C1">
+                    </div>
+                    <div class="form-group">
+                        <label for="kriteriaNama">Nama Kriteria <span class="text-danger">*</span></label>
+                        <input type="text" id="kriteriaNama" class="form-control" required placeholder="Contoh: Harga">
+                    </div>
+                    <div class="form-group">
+                        <label for="kriteriaJenis">Jenis Kriteria <span class="text-danger">*</span></label>
+                        <select id="kriteriaJenis" class="form-control" required>
+                            <option value="Benefit">Benefit (Keuntungan)</option>
+                            <option value="Cost">Cost (Biaya)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kriteriaBobot">Bobot (%) <span class="text-danger">*</span></label>
+                        <input type="number" id="kriteriaBobot" class="form-control" required min="1" max="100" placeholder="Contoh: 25">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('kriteriaModal')">Batal</button>
+                <button class="btn btn-primary" onclick="saveKriteria()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Alternatif -->
+    <div class="modal-overlay" id="alternatifModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="alternatifModalTitle">Tambah Alternatif</h3>
+                <button class="close-modal" onclick="closeModal('alternatifModal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAlternatif">
+                    <input type="hidden" id="alternatifId">
+                    <div class="form-group">
+                        <label for="alternatifKode">Kode Alternatif <span class="text-danger">*</span></label>
+                        <input type="text" id="alternatifKode" class="form-control" required placeholder="Contoh: A1">
+                    </div>
+                    <div class="form-group">
+                        <label for="alternatifNama">Nama Alternatif <span class="text-danger">*</span></label>
+                        <input type="text" id="alternatifNama" class="form-control" required placeholder="Contoh: BYD Dolphin">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('alternatifModal')">Batal</button>
+                <button class="btn btn-primary" onclick="saveAlternatif()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">Konfirmasi</h3>
+                <button class="close-modal" onclick="closeModal('confirmModal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Apakah Anda yakin?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('confirmModal')">Batal</button>
+                <button class="btn btn-danger" id="confirmActionBtn">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+</body>
+</html>
